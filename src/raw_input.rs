@@ -631,6 +631,20 @@ fn extract_one_event(buffer: &[u8]) -> Option<(RawInputEvent, usize)> {
             ));
         }
 
+        // WezTerm can concatenate a legacy Esc press with its kitty-protocol
+        // release (`ESC ESC [27;1:3u`). Preserve known doubled-Esc Alt forms
+        // above; otherwise split the lone press so the next pass can parse the
+        // independent release instead of dropping both events.
+        if buffer.starts_with(b"\x1b\x1b") {
+            return Some((
+                RawInputEvent::Key(
+                    TerminalKey::new(crossterm::event::KeyCode::Esc, KeyModifiers::empty())
+                        .with_vt_bytes(vec![ESC]),
+                ),
+                1,
+            ));
+        }
+
         tracing::debug!(sequence = ?seq, "dropping unsupported escape sequence");
         return Some((RawInputEvent::Unsupported, seq_len));
     }
@@ -1829,6 +1843,23 @@ mod tests {
             })
         ));
         assert!(framer.flush_timeout().is_empty());
+    }
+
+    #[test]
+    fn merged_legacy_escape_press_and_kitty_release_remain_separate_events() {
+        let events = parse_raw_input_bytes_sync(b"\x1b\x1b[27;1:3u");
+
+        assert_eq!(events.len(), 2);
+        let RawInputEvent::Key(press) = &events[0] else {
+            panic!("expected escape press");
+        };
+        assert_eq!(press.code, KeyCode::Esc);
+        assert_eq!(press.kind, KeyEventKind::Press);
+        let RawInputEvent::Key(release) = &events[1] else {
+            panic!("expected escape release");
+        };
+        assert_eq!(release.code, KeyCode::Esc);
+        assert_eq!(release.kind, KeyEventKind::Release);
     }
 
     #[test]
