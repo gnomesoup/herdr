@@ -427,6 +427,19 @@ fn keyboard_copy_mode_owns_cursor_selection_copy_and_scroll_restore() {
         Some(21)
     );
     assert!(enter.actions.is_empty());
+    let copy_frame = state.compose(106, 20).expect("copy mode frame");
+    let copy_text = copy_frame
+        .cells
+        .chunks(copy_frame.width as usize)
+        .map(|row| {
+            row.iter()
+                .map(|cell| cell.symbol.as_str())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(copy_text.contains("m/n/e/i w/b/f { }"));
+    assert!(copy_text.contains("k/K"));
 
     state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
         KeyCode::Char('m'),
@@ -1460,7 +1473,7 @@ fn queued_copy_keys_preserve_prefix_order() {
     );
     let origin = state.copy_mode.as_ref().expect("copy mode").cursor;
     let motion = state.handle_input_bytes(b"w");
-    state.handle_input_bytes(b"l");
+    state.handle_input_bytes(b"i");
     let (prefix_key, prefix_modifiers) = state.config.keybinds.prefix;
     state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
         prefix_key,
