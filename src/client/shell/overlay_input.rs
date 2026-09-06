@@ -718,12 +718,12 @@ impl ClientShellState {
                 outcome.repaint = true;
                 return;
             }
-            if matches!(code, KeyCode::Down | KeyCode::Char('j')) && modifiers.is_empty() {
+            if matches!(code, KeyCode::Down | KeyCode::Char('n')) && modifiers.is_empty() {
                 self.move_navigator_selection(1);
                 outcome.repaint = true;
                 return;
             }
-            if matches!(code, KeyCode::Up | KeyCode::Char('k')) && modifiers.is_empty() {
+            if matches!(code, KeyCode::Up | KeyCode::Char('e')) && modifiers.is_empty() {
                 self.move_navigator_selection(-1);
                 outcome.repaint = true;
                 return;

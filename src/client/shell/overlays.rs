@@ -936,7 +936,7 @@ fn render_navigator_overlay(
         if n.search_focused {
             " search type · move ↑↓/ctrl+n/p · open enter · back esc"
         } else {
-            " move j/k · expand space · filter a/b/w/i/d · search / · open enter · close esc"
+            " move n/e · expand space · filter a/b/w/i/d · search / · open enter · close esc"
         },
         Style::default().fg(p.overlay0).bg(p.panel_bg),
     );

@@ -211,10 +211,10 @@ impl ClientShellState {
             }
             'v' | ' ' => self.begin_copy_selection(false),
             'V' => self.begin_copy_selection(true),
-            'h' => self.move_copy_cursor(0, -1, outcome),
-            'j' => self.move_copy_cursor(1, 0, outcome),
-            'k' => self.move_copy_cursor(-1, 0, outcome),
-            'l' => self.move_copy_cursor(0, 1, outcome),
+            'm' => self.move_copy_cursor(0, -1, outcome),
+            'n' => self.move_copy_cursor(1, 0, outcome),
+            'e' => self.move_copy_cursor(-1, 0, outcome),
+            'i' => self.move_copy_cursor(0, 1, outcome),
             'g' => self.move_copy_history(true, outcome),
             'G' => self.move_copy_history(false, outcome),
             '0' => {
@@ -228,8 +228,8 @@ impl ClientShellState {
             }
             '/' => self.open_copy_search(crate::api::schema::PaneCopySearchDirection::Forward),
             '?' => self.open_copy_search(crate::api::schema::PaneCopySearchDirection::Backward),
-            'n' => self.repeat_copy_search(false, outcome),
-            'N' => self.repeat_copy_search(true, outcome),
+            'k' => self.repeat_copy_search(false, outcome),
+            'K' => self.repeat_copy_search(true, outcome),
             'w' => {
                 self.request_copy_motion(crate::api::schema::PaneCopyMotion::NextWordStart, outcome)
             }
@@ -237,7 +237,7 @@ impl ClientShellState {
                 crate::api::schema::PaneCopyMotion::PreviousWordStart,
                 outcome,
             ),
-            'e' => {
+            'f' => {
                 self.request_copy_motion(crate::api::schema::PaneCopyMotion::NextWordEnd, outcome)
             }
             'W' => self.request_copy_motion(
@@ -248,7 +248,7 @@ impl ClientShellState {
                 crate::api::schema::PaneCopyMotion::PreviousBigWordStart,
                 outcome,
             ),
-            'E' => self
+            'F' => self
                 .request_copy_motion(crate::api::schema::PaneCopyMotion::NextBigWordEnd, outcome),
             '{' => self.request_copy_motion(
                 crate::api::schema::PaneCopyMotion::PreviousParagraph,

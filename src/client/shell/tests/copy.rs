@@ -429,6 +429,39 @@ fn keyboard_copy_mode_owns_cursor_selection_copy_and_scroll_restore() {
     assert!(enter.actions.is_empty());
 
     state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
+        KeyCode::Char('m'),
+        KeyModifiers::empty(),
+    ))]);
+    assert_eq!(
+        state.copy_mode.as_ref().map(|mode| mode.cursor.col),
+        Some(0)
+    );
+    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
+        KeyCode::Char('i'),
+        KeyModifiers::empty(),
+    ))]);
+    assert_eq!(
+        state.copy_mode.as_ref().map(|mode| mode.cursor.col),
+        Some(1)
+    );
+    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
+        KeyCode::Char('e'),
+        KeyModifiers::empty(),
+    ))]);
+    assert_eq!(
+        state.copy_mode.as_ref().map(|mode| mode.cursor.row),
+        Some(20)
+    );
+    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
+        KeyCode::Char('n'),
+        KeyModifiers::empty(),
+    ))]);
+    assert_eq!(
+        state.copy_mode.as_ref().map(|mode| mode.cursor.row),
+        Some(21)
+    );
+
+    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
         KeyCode::Char('b'),
         KeyModifiers::CONTROL,
     ))]);
@@ -488,7 +521,7 @@ fn keyboard_copy_mode_owns_cursor_selection_copy_and_scroll_restore() {
         KeyModifiers::empty(),
     ))]);
     state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
-        KeyCode::Char('l'),
+        KeyCode::Char('i'),
         KeyModifiers::empty(),
     ))]);
     assert!(state
@@ -849,7 +882,7 @@ fn copy_search_owns_prompt_repeat_highlights_selection_and_restore() {
         KeyModifiers::empty(),
     ))]);
     let repeat = state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
-        KeyCode::Char('n'),
+        KeyCode::Char('k'),
         KeyModifiers::empty(),
     ))]);
     let [ClientShellAction::Endpoint { request, .. }] = &repeat.actions[..] else {
@@ -887,7 +920,7 @@ fn copy_search_owns_prompt_repeat_highlights_selection_and_restore() {
         .is_some_and(crate::selection::Selection::is_visible));
 
     let reverse = state.handle_raw_events(vec![RawInputEvent::Key(
-        crate::input::TerminalKey::new(KeyCode::Char('N'), KeyModifiers::SHIFT),
+        crate::input::TerminalKey::new(KeyCode::Char('K'), KeyModifiers::SHIFT),
     )]);
     let [ClientShellAction::Endpoint { request, .. }] = &reverse.actions[..] else {
         panic!("reverse search should use endpoint search");
@@ -1087,6 +1120,29 @@ fn navigator_owns_search_mouse_selection_and_stable_target_focus() {
         &mut open,
     );
     let navigator = state.compose(106, 30).expect("navigator overlay");
+    let initial_selected = match state.overlay.as_ref().expect("navigator") {
+        ClientShellOverlay::Navigator(navigator) => navigator.selected,
+        _ => panic!("expected navigator"),
+    };
+    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
+        KeyCode::Char('n'),
+        KeyModifiers::empty(),
+    ))]);
+    assert!(matches!(
+        state.overlay,
+        Some(ClientShellOverlay::Navigator(ClientNavigatorOverlay { selected, .. }))
+            if selected == initial_selected + 1
+    ));
+    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
+        KeyCode::Char('e'),
+        KeyModifiers::empty(),
+    ))]);
+    assert!(matches!(
+        state.overlay,
+        Some(ClientShellOverlay::Navigator(ClientNavigatorOverlay { selected, .. }))
+            if selected == initial_selected
+    ));
+
     let navigator_text = navigator
         .cells
         .chunks(navigator.width as usize)
