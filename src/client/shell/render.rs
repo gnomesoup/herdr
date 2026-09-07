@@ -113,9 +113,9 @@ pub(super) fn render_mode_bar(
                 segments.extend([
                     (" RESIZE ".to_owned(), mode_style),
                     ("  ".to_owned(), base),
-                    ("h/l".to_owned(), key),
+                    ("m/i".to_owned(), key),
                     (" width  ".to_owned(), base),
-                    ("j/k".to_owned(), key),
+                    ("n/e".to_owned(), key),
                     (" height  ".to_owned(), base),
                     ("esc".to_owned(), key),
                     (" done".to_owned(), base),

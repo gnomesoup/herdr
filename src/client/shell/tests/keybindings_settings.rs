@@ -799,6 +799,20 @@ fn resize_mode_reuses_endpoint_resize_and_stays_active_until_done() {
     assert!(state.handle_input_bytes(b"r").actions.is_empty());
     assert_eq!(state.mode, ClientShellMode::Resize);
 
+    let resize_frame = state.compose(106, 20).expect("resize mode frame");
+    let resize_text = resize_frame
+        .cells
+        .chunks(resize_frame.width as usize)
+        .map(|row| {
+            row.iter()
+                .map(|cell| cell.symbol.as_str())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(resize_text.contains("m/i"));
+    assert!(resize_text.contains("n/e"));
+
     let modified = state.handle_input_bytes(b"\x1b[1;2D");
     assert!(matches!(
         &modified.actions[..],
@@ -811,17 +825,24 @@ fn resize_mode_reuses_endpoint_resize_and_stays_active_until_done() {
     ));
     assert_eq!(state.mode, ClientShellMode::Resize);
 
-    let resize = state.handle_input_bytes(b"h");
-    let [ClientShellAction::Endpoint { request, .. }] = &resize.actions[..] else {
-        panic!("resize should use endpoint API");
-    };
-    assert!(matches!(
-        &request.method,
-        crate::api::schema::Method::PaneResize(params)
-            if params.pane_id.as_deref() == Some("pane_1")
-                && params.direction == crate::api::schema::PaneDirection::Left
-    ));
-    assert_eq!(state.mode, ClientShellMode::Resize);
+    for (key, direction) in [
+        (b"m".as_slice(), crate::api::schema::PaneDirection::Left),
+        (b"n".as_slice(), crate::api::schema::PaneDirection::Down),
+        (b"e".as_slice(), crate::api::schema::PaneDirection::Up),
+        (b"i".as_slice(), crate::api::schema::PaneDirection::Right),
+    ] {
+        let resize = state.handle_input_bytes(key);
+        let [ClientShellAction::Endpoint { request, .. }] = &resize.actions[..] else {
+            panic!("resize should use endpoint API");
+        };
+        assert!(matches!(
+            &request.method,
+            crate::api::schema::Method::PaneResize(params)
+                if params.pane_id.as_deref() == Some("pane_1")
+                    && params.direction == direction
+        ));
+        assert_eq!(state.mode, ClientShellMode::Resize);
+    }
 
     assert!(state.handle_input_bytes(b"\r").actions.is_empty());
     assert_eq!(state.mode, ClientShellMode::Terminal);

@@ -935,10 +935,10 @@ impl ClientShellState {
         }
 
         let action = match key.code {
-            KeyCode::Char('h') | KeyCode::Left => Some(crate::input::KeybindAction::ResizePaneLeft),
-            KeyCode::Char('j') | KeyCode::Down => Some(crate::input::KeybindAction::ResizePaneDown),
-            KeyCode::Char('k') | KeyCode::Up => Some(crate::input::KeybindAction::ResizePaneUp),
-            KeyCode::Char('l') | KeyCode::Right => {
+            KeyCode::Char('m') | KeyCode::Left => Some(crate::input::KeybindAction::ResizePaneLeft),
+            KeyCode::Char('n') | KeyCode::Down => Some(crate::input::KeybindAction::ResizePaneDown),
+            KeyCode::Char('e') | KeyCode::Up => Some(crate::input::KeybindAction::ResizePaneUp),
+            KeyCode::Char('i') | KeyCode::Right => {
                 Some(crate::input::KeybindAction::ResizePaneRight)
             }
             _ => None,
